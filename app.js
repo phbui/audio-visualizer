@@ -7,6 +7,16 @@ let analyser;
 let microphone;
 let javascriptNode;
 
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvasCtx.scale(dpr, dpr);
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
 startButton.onclick = async () => {
   audioContext = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioContext.createAnalyser();
@@ -33,29 +43,74 @@ function drawVisualizer(dataArray) {
   requestAnimationFrame(() => {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
     canvasCtx.fillStyle = "black";
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+    canvasCtx.fillRect(
+      0,
+      0,
+      canvas.width / (window.devicePixelRatio || 1),
+      canvas.height / (window.devicePixelRatio || 1)
+    );
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY);
 
-    canvasCtx.strokeStyle = "white";
-    canvasCtx.beginPath();
+    // Draw the main shape
+    drawPolygon(dataArray, centerX, centerY, radius, 0);
 
-    for (let i = 0; i < dataArray.length; i++) {
-      const angle = (i / dataArray.length) * 2 * Math.PI;
-      const distance = (dataArray[i] / 255) * radius;
-      const x = centerX + distance * Math.cos(angle);
-      const y = centerY + distance * Math.sin(angle);
+    // Draw mirrored copies (horizontal)
+    drawPolygon(dataArray, centerX, centerY, radius, 0, true, false);
 
-      if (i === 0) {
-        canvasCtx.moveTo(x, y);
-      } else {
-        canvasCtx.lineTo(x, y);
-      }
-    }
+    // Draw mirrored copies (vertical)
+    drawPolygon(dataArray, centerX, centerY, radius, 0, false, true);
 
-    canvasCtx.closePath();
-    canvasCtx.stroke();
+    // Draw mirrored copies (both horizontal and vertical)
+    drawPolygon(dataArray, centerX, centerY, radius, 0, true, true);
+
+    // Draw the rotated shape (90 degrees)
+    drawPolygon(dataArray, centerX, centerY, radius, Math.PI / 2);
+
+    // Draw mirrored copies of rotated shape (horizontal)
+    drawPolygon(dataArray, centerX, centerY, radius, Math.PI / 2, true, false);
+
+    // Draw mirrored copies of rotated shape (vertical)
+    drawPolygon(dataArray, centerX, centerY, radius, Math.PI / 2, false, true);
+
+    // Draw mirrored copies of rotated shape (both horizontal and vertical)
+    drawPolygon(dataArray, centerX, centerY, radius, Math.PI / 2, true, true);
   });
+}
+
+function drawPolygon(
+  dataArray,
+  centerX,
+  centerY,
+  radius,
+  rotation,
+  mirrorX = false,
+  mirrorY = false
+) {
+  canvasCtx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  canvasCtx.strokeStyle = "white";
+  canvasCtx.lineWidth = 2;
+  canvasCtx.beginPath();
+
+  for (let i = 0; i < dataArray.length; i++) {
+    const angle = (i / dataArray.length) * 2 * Math.PI + rotation;
+    const distance = (dataArray[i] / 255) * radius;
+    let x = centerX + distance * Math.cos(angle);
+    let y = centerY + distance * Math.sin(angle);
+
+    if (mirrorX) x = centerX - (x - centerX);
+    if (mirrorY) y = centerY - (y - centerY);
+
+    if (i === 0) {
+      canvasCtx.moveTo(x, y);
+    } else {
+      canvasCtx.lineTo(x, y);
+    }
+  }
+
+  canvasCtx.closePath();
+  canvasCtx.stroke();
+  canvasCtx.fill();
 }
