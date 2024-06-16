@@ -27,6 +27,7 @@ canvas {
   position: absolute;
   pointer-events: none;
   z-index: 0;
+  background-color: pink;
 }
 
 button {
