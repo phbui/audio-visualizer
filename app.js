@@ -12,6 +12,8 @@ function resizeCanvas() {
   canvas.width = window.innerWidth * dpr;
   canvas.height = window.innerHeight * dpr;
   canvasCtx.scale(dpr, dpr);
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
 }
 
 window.addEventListener("resize", resizeCanvas);
@@ -43,12 +45,7 @@ function drawVisualizer(dataArray) {
   requestAnimationFrame(() => {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
     canvasCtx.fillStyle = "black";
-    canvasCtx.fillRect(
-      0,
-      0,
-      canvas.width / (window.devicePixelRatio || 1),
-      canvas.height / (window.devicePixelRatio || 1)
-    );
+    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
