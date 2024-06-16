@@ -32,21 +32,30 @@ stopButton.onclick = () => {
 function drawVisualizer(dataArray) {
   requestAnimationFrame(() => {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+    canvasCtx.fillStyle = "black";
+    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const barWidth = (canvas.width / dataArray.length) * 2.5;
-    let barHeight;
-    let x = 0;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY);
+
+    canvasCtx.strokeStyle = "white";
+    canvasCtx.beginPath();
 
     for (let i = 0; i < dataArray.length; i++) {
-      barHeight = dataArray[i];
-      canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
-      canvasCtx.fillRect(
-        x,
-        canvas.height - barHeight / 2,
-        barWidth,
-        barHeight / 2
-      );
-      x += barWidth + 1;
+      const angle = (i / dataArray.length) * 2 * Math.PI;
+      const distance = (dataArray[i] / 255) * radius;
+      const x = centerX + distance * Math.cos(angle);
+      const y = centerY + distance * Math.sin(angle);
+
+      if (i === 0) {
+        canvasCtx.moveTo(x, y);
+      } else {
+        canvasCtx.lineTo(x, y);
+      }
     }
+
+    canvasCtx.closePath();
+    canvasCtx.stroke();
   });
 }
